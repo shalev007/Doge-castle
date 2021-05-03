@@ -1,4 +1,4 @@
 .env
 node_modules
 package-lock.json
-creds.txt
+helper/lastTweet.json

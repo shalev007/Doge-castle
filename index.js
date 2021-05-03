@@ -1,12 +1,22 @@
 import Twitter from 'twitter';
+import Binance from 'node-binance-api';
 import dotenv from 'dotenv';
 
 import lastTweet from './helper/lastTweet.js';
+import getTime from './helper/timer.js';
 
 // use .env file variables
 dotenv.config();
 
-var client = new Twitter({
+const binance = new Binance().options({
+  APIKEY: process.env.BINANCE_DEMO_API_KEY,
+  APISECRET: process.env.BINANCE_DEMO_API_KEY_SECRET,
+  urls: { // test
+    base: 'https://testnet.binance.vision/api/'
+  }
+});
+
+var twitter = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY,
     consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
     access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
@@ -17,14 +27,15 @@ const buyDogeAfterEveryElonTweet = async function() {
     const params = {
         screen_name: 'elonmusk',
         count: 1,
-        // since_id: '1387897099983990800',
-        since_id: lastTweet.get(),
+        since_id: '1387897099983990800',
+        // since_id: lastTweet.get(),
         tweet_mode: 'extended'
     };
 
     // get Elon musk twitter timeline
-    const tweets = await client.get('statuses/user_timeline', params);
+    const tweets = await twitter.get('statuses/user_timeline', params);
     if(!tweets.length) {
+        console.log(`${getTime()} | Elon did not mention Doge`);
         return;
     }
     // take lastest tweet
@@ -33,11 +44,11 @@ const buyDogeAfterEveryElonTweet = async function() {
 
     // if tweet contains the word doge
     if(tweet.full_text.search(/ doge/ig)) {
+        console.log(`${getTime()} | Elon mentioned Doge`);
         console.log({tweet: tweet.full_text});
         // buy dogecoine
     }
-    console.dir({tweets: tweets, length: tweets.length, entities: tweet.entities})
 };
 
 // run every 15 sec
-let l = setInterval(buyDogeAfterEveryElonTweet, 15 * 1000);
+setInterval(buyDogeAfterEveryElonTweet, 15 * 1000);
