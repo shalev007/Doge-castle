@@ -8,13 +8,20 @@ import getTime from './helper/timer.js';
 // use .env file variables
 dotenv.config();
 
-const binance = new Binance().options({
-  APIKEY: process.env.BINANCE_DEMO_API_KEY,
-  APISECRET: process.env.BINANCE_DEMO_API_KEY_SECRET,
-  urls: { // test
-    base: 'https://testnet.binance.vision/api/'
-  }
-});
+const isTest = true;
+
+const binanceOptions = {
+    APIKEY: isTest ? process.env.BINANCE_DEMO_API_KEY : process.env.BINANCE_API_KEY,
+    APISECRET: isTest ? process.env.BINANCE_DEMO_API_KEY_SECRET : process.env.BINANCE_API_KEY_SECRET,
+};
+if(isTest) {
+    binanceOptions.urls = { // test
+      base: 'https://testnet.binance.vision/api/'
+    }
+}
+
+const binance = new Binance().options(binanceOptions);
+const amount = 1;
 
 var twitter = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -47,8 +54,12 @@ const buyDogeAfterEveryElonTweet = async function() {
         console.log(`${getTime()} | Elon mentioned Doge`);
         console.log({tweet: tweet.full_text});
         // buy dogecoine
+        binance.marketBuy('DOGEUSDT', amount, (error, response) => {
+            console.info("Market Buy response", response);
+            console.info("order id: " + response.orderId);
+        });
     }
 };
 
-// run every 15 sec
-setInterval(buyDogeAfterEveryElonTweet, 15 * 1000);
+// run every 15 min
+setInterval(buyDogeAfterEveryElonTweet, (15*60*1000));
